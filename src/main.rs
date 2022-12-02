@@ -1,7 +1,7 @@
 use std::fs::File;
-use std::io::{BufReader, BufRead, Read};
+use std::io::{BufRead, BufReader, Read};
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 struct Elf {
     calories: usize,
 }
@@ -9,7 +9,7 @@ struct Elf {
 fn main() {
     println!("Hello, AoC2022!");
 
-    let mut elf = Elf::default();
+    let mut elf = Vec::<Elf>::new();
     let mut current_elf = Elf::default();
 
     let mut file = File::open("list.txt").unwrap();
@@ -18,16 +18,20 @@ fn main() {
     for line in input {
         if let Ok(data) = line {
             if data.is_empty() {
-                if current_elf.calories > elf.calories {
-                    elf = current_elf;
-                }
+                elf.push(current_elf.clone());
                 current_elf = Elf::default();
                 continue;
             }
             current_elf.calories += data.parse::<usize>().unwrap();
         }
-
     }
 
-    println!("{:?}", elf);
+    elf.sort_by_key(|e| e.calories);
+
+    let mut total = 0;
+    for _ in 0..3 {
+        let e = elf.pop().unwrap();
+        total += e.calories;
+    }
+    println!("{}", total);
 }
