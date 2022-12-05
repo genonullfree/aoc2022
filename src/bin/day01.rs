@@ -12,7 +12,7 @@ fn main() {
     let mut elf = Vec::<Elf>::new();
     let mut current_elf = Elf::default();
 
-    let mut file = File::open("list.txt").unwrap();
+    let mut file = File::open("day01.txt").unwrap();
     let input = BufReader::new(file).lines();
 
     for line in input {
