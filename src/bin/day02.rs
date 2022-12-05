@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader};
 
 #[derive(PartialEq, Eq)]
 enum RPS {
@@ -23,24 +23,22 @@ fn main() {
     let file = File::open("day02.txt").unwrap();
     let input = BufReader::new(file).lines();
 
-    for line in input {
-        if let Ok(mut data) = line {
-            if data.is_empty() {
-                panic!();
-            }
-            let us = wld_pick(data.pop().unwrap());
-            let _ = data.pop();
-            let them = them_pick(data.pop().unwrap());
-
-            total_score += calc(them, us);
+    for mut data in input.flatten() {
+        if data.is_empty() {
+            panic!();
         }
+        let us = wld_pick(data.pop().unwrap());
+        let _ = data.pop();
+        let them = them_pick(data.pop().unwrap());
+
+        total_score += calc(them, us);
     }
 
     println!("{}", total_score);
 }
 
 fn calc(them: RPS, you: WLD) -> usize {
-    let mut us_picked = match them {
+    let us_picked = match them {
         RPS::Rock => match you {
             WLD::Lose => RPS::Scissors,
             WLD::Draw => RPS::Rock,
