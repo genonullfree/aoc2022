@@ -4,28 +4,24 @@ const SCORE: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 fn main() {
     let lines: Vec<&str> = INPUT.trim().lines().collect();
     let mut score = 0;
-    for l in lines {
-        score += analyze_line(l);
+    for l in lines.chunks(3) {
+        score += analyze_lines(l);
     }
 
     println!("score: {}", score);
 }
 
-fn analyze_line(input: &str) -> usize {
-    let length = input.len();
-    if length % 2 != 0 {
+fn analyze_lines(input: &[&str]) -> usize {
+    if input.len() != 3 {
         panic!();
     }
 
-    let a = &input[..length / 2];
-    let b = &input[length / 2..];
+    let a = input[0];
+    let b = input[1];
+    let c = input[2];
 
-    find_dupe(a, b)
-}
-
-fn find_dupe(a: &str, b: &str) -> usize {
     for i in a.chars() {
-        if b.contains(i) {
+        if b.contains(i) && c.contains(i) {
             return get_score(i);
         }
     }
