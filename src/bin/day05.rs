@@ -31,9 +31,14 @@ fn execute_moves(stacks: &mut Vec<Stack>, input: Vec<&str>) {
 }
 
 fn execute(stacks: &mut Vec<Stack>, num: usize, from: usize, to: usize) {
+    let mut tmp = Stack::default();
     for i in 0..num {
         let d = stacks[from].data.pop().unwrap();
-        stacks[to].data.push(d);
+        tmp.data.insert(0, d);
+    }
+
+    for i in tmp.data {
+        stacks[to].data.push(i);
     }
 }
 
@@ -78,8 +83,4 @@ fn split_input(input: Vec<&str>) -> (Vec<&str>, Vec<&str>) {
     }
 
     (a, b)
-}
-
-fn analyze_line(_input: &str) -> bool {
-    false
 }
