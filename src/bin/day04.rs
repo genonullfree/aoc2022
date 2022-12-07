@@ -30,11 +30,8 @@ fn analyze_line(input: &str) -> bool {
 }
 
 fn vec_contains(a: &[usize], b: &[usize]) -> bool {
-    for (n, i) in a.iter().enumerate() {
-        if !b.contains(i) {
-            break;
-        }
-        if n == a.len() - 1 {
+    for i in a.iter() {
+        if b.contains(i) {
             return true;
         }
     }
