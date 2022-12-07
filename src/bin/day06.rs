@@ -2,9 +2,9 @@ const INPUT: &str = include_str!("../../day06.txt");
 
 fn main() {
     let mut window = Vec::<char>::new();
-    window.resize(4, '0');
+    window.resize(14, '0');
     for (n, i) in INPUT.chars().enumerate() {
-        if n < 4 {
+        if n < 14 {
             shift_in(&mut window, i);
         }
         if are_unique(&window) {
