@@ -30,7 +30,6 @@ fn main() {
         if line.is_none() {
             break;
         }
-        println!("line: {}", line.unwrap());
         let split: Vec<&str> = line.unwrap().split(' ').collect();
         let change_dir = match split[0] {
             "$" => command(&mut tree, &current_dir, split),
@@ -43,9 +42,15 @@ fn main() {
         }
     }
 
+    let size = disk_usage(&mut tree, &root_id);
+    println!("size: {}", size);
+
     for node in tree.traverse_pre_order(&root_id).unwrap() {
         println!("{:?}, ", node.data());
     }
+
+    let size = analyze(&mut tree, &root_id);
+    println!("size: {}", size);
 }
 
 fn command(tree: &mut Tree<FsItem>, node: &NodeId, input: Vec<&str>) -> Option<NodeId> {
@@ -86,4 +91,49 @@ fn add_file(tree: &mut Tree<FsItem>, node: &NodeId, input: Vec<&str>) -> Option<
     }
 
     None
+}
+
+fn analyze(tree: &mut Tree<FsItem>, node: &NodeId) -> usize {
+    let node_tmp = tree.get(node).unwrap();
+    let children = node_tmp.children().clone();
+    drop(node_tmp);
+
+    let mut size = 0;
+    for c in children {
+        let child = tree.get(&c).unwrap().clone();
+        size += match child.data().fstype {
+            FsType::File => 0,
+            FsType::Dir => {
+                if child.data().size > 100000 {
+                    analyze(tree, &c)
+                } else {
+                    child.data().size + analyze(tree, &c)
+                }
+            }
+        }
+    }
+
+    size
+}
+
+fn disk_usage(tree: &mut Tree<FsItem>, node: &NodeId) -> usize {
+    let node_tmp = tree.get(node).unwrap();
+    let children = node_tmp.children().clone();
+    drop(node_tmp);
+
+    let mut size = 0;
+    for c in children {
+        let child = tree.get(&c).unwrap().clone();
+        size += match child.data().fstype {
+            FsType::File => child.data().size,
+            FsType::Dir => disk_usage(tree, &c),
+        }
+    }
+
+    let node = tree.get_mut(node).unwrap();
+    let mut data = node.data().clone();
+    data.size = size;
+    node.replace_data(data);
+
+    size
 }
