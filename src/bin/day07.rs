@@ -2,6 +2,8 @@ use id_tree::InsertBehavior::*;
 use id_tree::*;
 
 const INPUT: &str = include_str!("../../day07.txt");
+const TOTAL_SIZE: usize = 70000000;
+const MIN_SIZE: usize = 30000000;
 
 #[derive(Clone, Debug, Default)]
 struct FsItem {
@@ -42,14 +44,16 @@ fn main() {
         }
     }
 
-    let size = disk_usage(&mut tree, &root_id);
-    println!("size: {}", size);
+    let actual_size = disk_usage(&mut tree, &root_id);
+    println!("used size: {}", actual_size);
 
-    for node in tree.traverse_pre_order(&root_id).unwrap() {
-        println!("{:?}, ", node.data());
-    }
+    let unused = TOTAL_SIZE - actual_size;
+    println!("unused size: {}", unused);
 
-    let size = analyze(&mut tree, &root_id);
+    let need = MIN_SIZE - unused;
+    println!("need: {}", need);
+
+    let size = analyze(&mut tree, &root_id, need);
     println!("size: {}", size);
 }
 
@@ -93,21 +97,23 @@ fn add_file(tree: &mut Tree<FsItem>, node: &NodeId, input: Vec<&str>) -> Option<
     None
 }
 
-fn analyze(tree: &mut Tree<FsItem>, node: &NodeId) -> usize {
+fn analyze(tree: &mut Tree<FsItem>, node: &NodeId, need: usize) -> usize {
     let node_tmp = tree.get(node).unwrap();
     let children = node_tmp.children().clone();
     drop(node_tmp);
 
-    let mut size = 0;
+    let mut size = usize::MAX;
     for c in children {
         let child = tree.get(&c).unwrap().clone();
-        size += match child.data().fstype {
-            FsType::File => 0,
+        match child.data().fstype {
+            FsType::File => (),
             FsType::Dir => {
-                if child.data().size > 100000 {
-                    analyze(tree, &c)
-                } else {
-                    child.data().size + analyze(tree, &c)
+                if child.data().size > need && child.data().size < size {
+                    size = child.data().size;
+                }
+                let child_size = analyze(tree, &c, need);
+                if child_size < size && child_size > 0 {
+                    size = child_size;
                 }
             }
         }
